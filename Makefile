@@ -21,7 +21,8 @@ SRCDIR		=		source
 
 SRCS		=		source/my_malloc.c \
 				source/my_free.c   \
-				source/my_realloc.c 
+				source/my_realloc.c \
+				source/show_alloc_mem.c
 
 OBJDIR		=		build
 

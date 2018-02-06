@@ -7,13 +7,13 @@
 
 CC		=		gcc
 
-CFLAGS		+=		-W -Wall -Wextra -Werror
+CFLAGS		+=		-W -Wall -Wextra -g 
 
 CFLAGS		+=		-I ../include -I ./include
 
 CFLAGS		+=		$(DEBUG)
 
-LDFLAGS		=		-l criterion -coverage
+LDFLAGS		=		-l criterion -coverage -l show
 
 NAME		=		unit-tests
 
@@ -28,6 +28,15 @@ OBJS		=		$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o,  $(SRCS))
 all:		$(NAME)
 		@echo "Done compiling $(NAME)"
 		@echo "Executing tests:"
+		@make --no-print-directory run1
+		@make --no-print-directory run2
+
+run1:		$(NAME)
+		@echo "---------GLIBC---------"
+		@ ./$(NAME)
+
+run2:
+		@echo "---------MY---------"
 		@ LD_PRELOAD=../libmy_malloc.so ./$(NAME)
 
 $(NAME):	buildrepo $(OBJS)

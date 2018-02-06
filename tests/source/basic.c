@@ -11,10 +11,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include "my_malloc.h"
 
 //#define align8(x) (((((x)-1)>>5)<<5)+32)
 //#define align4(x) (((((x)-1)>>2)<<2)+4)
 //# define ALIGN(x, y) (((x) + ((y) - 1)) & ~((y) - 1))
+void show_alloc_mem(void);
 
 void printBits(size_t const size, void const * const ptr)
 {
@@ -37,8 +39,20 @@ void printBits(size_t const size, void const * const ptr)
 //Test(my_printf_basic, lala)
 int main()
 {
-	int *l = malloc(sizeof(int));
+	void *brk = sbrk(0);
+	char *l = malloc(sizeof(char) * 4);
+	long long addrl = (long long)l;
 	free(l);
+	int *i = malloc(sizeof(int));
+	printf("break begin: %lld\n", (long long)brk);
+	show_alloc_mem();
+//	write(1, l, 2);
+	printf("addrl: %lld\n", addrl);
+	printf("addri: %lld\n", (long long)i);
+	printf("MINUS: %lld\n", addrl - (long long)i);
+	printf("ALIGN 8 : %ld\n", ALIGN(8, sizeof(void*)));
+	printf("sizeof struct : %d\n", sizeof(struct meta_data));
+	printf("sizeof size_t : %d\n", sizeof(size_t));
 //	if (l == NULL)
 //		write(1, "NULL\n", 5);
 	

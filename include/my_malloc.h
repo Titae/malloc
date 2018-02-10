@@ -16,13 +16,15 @@ typedef struct meta_data *meta_data_t;
 
 struct meta_data {
 	meta_data_t next;
-	int used;
+	meta_data_t prev;
 	size_t size;
+	int used;
+	meta_data_t ptr;
 };
-//	meta_data_t prev;
 
 extern pthread_mutex_t heap_mutex;
 extern meta_data_t heap_head;
 extern meta_data_t heap_tail;
+extern const void *break_origin;
 
 #endif /* MY_MALLOC_H_ */

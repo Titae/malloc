@@ -5,17 +5,12 @@
 ** basic tests for printf
 */
 
-#include <criterion/criterion.h>
-#include <criterion/redirect.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <pthread.h>
+#include <string.h>
 #include "my_malloc.h"
 
-//#define align8(x) (((((x)-1)>>5)<<5)+32)
-//#define align4(x) (((((x)-1)>>2)<<2)+4)
-//# define ALIGN(x, y) (((x) + ((y) - 1)) & ~((y) - 1))
 void show_alloc_mem(void);
 
 void printBits(size_t const size, void const * const ptr)
@@ -24,10 +19,8 @@ void printBits(size_t const size, void const * const ptr)
 	unsigned char byte;
 	int i, j;
 
-	for (i=size-1;i>=0;i--)
-	{
-		for (j=7;j>=0;j--)
-		{
+	for (i=size-1;i>=0;i--) {
+		for (j=7;j>=0;j--) {
 			byte = (b[i] >> j) & 1;
 			printf("%u", byte);
 		}
@@ -36,68 +29,90 @@ void printBits(size_t const size, void const * const ptr)
 	puts("");
 }
 
-//Test(my_printf_basic, lala)
-int main()
+static void my_putchar(char c)
 {
-	void *brk = sbrk(0);
-	char *l = malloc(sizeof(char) * 4);
-	long long addrl = (long long)l;
-	free(l);
-	int *i = malloc(sizeof(int));
-	printf("break begin: %lld\n", (long long)brk);
-	show_alloc_mem();
-//	write(1, l, 2);
-	printf("addrl: %lld\n", addrl);
-	printf("addri: %lld\n", (long long)i);
-	printf("MINUS: %lld\n", addrl - (long long)i);
-	printf("ALIGN 8 : %ld\n", ALIGN(8, sizeof(void*)));
-	printf("sizeof struct : %d\n", sizeof(struct meta_data));
-	printf("sizeof size_t : %d\n", sizeof(size_t));
-//	if (l == NULL)
-//		write(1, "NULL\n", 5);
+	write(1, &c, 1);
+}
+
+static void my_putstr(char *str)
+{
+	write(1, str, strlen(str));
+}
+
+static void my_putnbr(long long nb)
+{
+	long long mod;
+
+	if (nb < 0) {
+		my_putchar('-');
+		nb = nb * (-1);
+	}
+	if (nb >= 0) {
+		if (nb >= 10) {
+			mod = (nb % 10);
+			nb = (nb - mod) / 10;
+			my_putnbr(nb);
+			my_putchar(48 + mod);
+		} else
+			my_putchar(48 + nb % 10);
+	}
+}
+
+void put_test(char *test, unsigned int nb)
+{
+	my_putstr("Test: ");
+	my_putstr(test);
+	my_putstr(" | no: ");
+	my_putnbr((long long)nb);
+	my_putstr("\n");
+}
+
+void put_got_expected(long long got, long long expected)
+{
+	my_putstr("Got: ");
+	my_putnbr(got);
+	my_putstr(" | Expected: ");
+	my_putnbr(expected);
+	my_putstr("\n");
+}
+
+unsigned int assert_alloc_good_size(char *test, unsigned int *nb, size_t size)
+{
+	void *brk_origin;
+	long long got;
+	long long expected;
+	unsigned int good = 0;
 	
-//	int *lll = sbrk(0);
-//	*(lll + 1) = 200;
-//	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-//	(void)mutex;
-//	int lal = 8;
-//	printf("%ld\n", sizeof(void*));
-//	printf("%ld\n", ALIGN(lal, sizeof(void*)));
+	brk_origin = sbrk(0);
+	malloc(size);
+	got = (long long)sbrk(0) - (long long)brk_origin;
+	expected = sizeof(struct meta_data) + ALIGN(size, sizeof(void*));
+	if (got != expected && size != 0) {
+		put_test(test, *nb);
+		put_got_expected(got, expected);
+		good++;
+	}
+	++(*nb);
+	return good;
+}
 
-//	int *p1 = malloc(48);
-//	int *p2 = malloc(1);
-//	printf("p1: %lld\np2: %lld\n", (long long)p1, (long long)p2);
+static unsigned int ut_malloc_sizes()
+{
+	char test[] = "ut_malloc_sizes";
+	unsigned int nb = 0;
+	unsigned int good = 0;
 
-//	printBits(sizeof(*p1), &p1);
-//	printBits(sizeof(*p2), &p2);
-//	int *i = malloc(sizeof(int));
+	good += assert_alloc_good_size(test, &nb, 0);
+	for (size_t i = 1; i <= 65536; i *= 2)
+		good += assert_alloc_good_size(test, &nb, i);
+	good += assert_alloc_good_size(test, &nb, sizeof(int));
+	good += assert_alloc_good_size(test, &nb, 200 * sizeof(char));
+	good += assert_alloc_good_size(test, &nb, 1024 * sizeof(char *));
+	good += assert_alloc_good_size(test, &nb, 3 * sizeof(char));
+	return good;
+}
 
-//	*i = 15;
-//	printf("%p\n", i);	
-//	i = (int *)(((char*)i) + 1);
-//	printf("%p\n", i);
-//	printBits(sizeof(i), &i);
-//	int *u = (int *)((long long)i << 2);
-//	i = (int *)align8((long long)i);
-//	printBits(sizeof(i), &i);
-
-
-	
-/*	printf("%p\n", sbrk(0));
-	printf("%#llx\n", align8((long long)sbrk(0)));
-	printf("sizeof int: %ld\n", sizeof(int));
-	char *p = malloc(sizeof(char));
-	printf("p: %lld\n", (align8((long long)p) + 1) % 8);
-	printf("%p\n", sbrk(0));
-	free(p);
-	printf("%p\n", sbrk(0));
-	printf("%p\n", sbrk(0));
-//	printf("salu%dt\n", 12);*/
-
-/*	printf("sbrk(0): %p\n", sbrk(0));
-	printf("sbrk(0): %p\n", sbrk(0));
-	printf("sbrk(5): %p\n", sbrk(5));
-	printf("sbrk(0): %p\n", sbrk(0));
-	printf("sbrk(-5): %p\n", sbrk(-5));
-	printf("sbrk(0): %p\n", sbrk(0));*/
+int main(void)
+{
+	ut_malloc_sizes();
 }

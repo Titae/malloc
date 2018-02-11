@@ -25,10 +25,10 @@ OBJDIR		=		build
 
 OBJS		=		$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o,  $(SRCS))
 
-all:		$(NAME)
+all:		libshow.so $(NAME)
 		@echo "Done compiling $(NAME)"
 		@echo "Executing tests:"
-		@make --no-print-directory run1
+#		@make --no-print-directory run1
 		@make --no-print-directory run2
 
 run1:		$(NAME)
@@ -47,13 +47,16 @@ $(OBJDIR)/%.o:	$(SRCDIR)/%.c
 		@echo "->" $<
 		@$(CC) -c $< -o $@ $(CFLAGS)
 
+libshow.so:
+		$(CC) -o $@ $(CFLAGS) -fPIC -shared source/show.c
+
 buildrepo:
 		@$(call build-repo)
 
 clean:
 		@echo "Cleaning object files"
 		@rm -rf $(OBJDIR)
-
+		@rm -f libshow.so
 
 fclean:		clean
 		@echo "Cleaning binary"

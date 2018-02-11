@@ -7,7 +7,7 @@
 
 CC		=		gcc
 
-CFLAGS		+=		-W -Wall -Wextra -fPIC -g # -Werror -Wpadded -ansi -pedantic -g
+CFLAGS		+=		-W -Wall -Wextra -fPIC -g
 
 CFLAGS		+=		-I./include
 
@@ -22,7 +22,7 @@ SRCDIR		=		source
 SRCS		=		source/my_malloc.c \
 				source/my_free.c   \
 				source/my_realloc.c \
-				source/show_alloc_mem.c
+				source/my_calloc.c
 
 OBJDIR		=		build
 

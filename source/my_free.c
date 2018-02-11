@@ -37,31 +37,14 @@ void free(void *ptr)
 	pthread_mutex_lock(&heap_mutex);
 	if (!ptr || !is_valid_ptr(ptr))
 		goto end;
-	if (ptr - (void *)heap_head < (void *)heap_tail - ptr) {
-		block = heap_head;
-		direction = 0;
-	} else {
-		block = heap_tail;
-		direction = 1;
-	}
+	direction = ptr - (void *)heap_head < (void *)heap_tail - ptr;
+	block = (direction) ? heap_head : heap_tail;
 	while (block && (block + 1) != ptr)
-		block = (direction) ? block->prev : block->next;
+		block = (direction) ? block->next : block->prev;
 	if (block) {
 		block->used = 0;
 		merge_block(block);
 	}
-//	if (block && block == heap_tail) {
-//		my_putstr("IN\n");
-//		if (block == heap_head) {
-//			my_putstr("DEDANS\n");
-//			heap_head = NULL;
-//			heap_tail = NULL;
-//		} else {
-//			my_putstr("DANSDE\n");
-//			heap_tail = heap_tail->prev;
-//		}
-//		sbrk(-(block->size + sizeof(*block)));
-//	}
 end:
 	pthread_mutex_unlock(&heap_mutex);
 }

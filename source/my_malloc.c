@@ -53,14 +53,10 @@ static meta_data_t push_break(size_t size)
 	return block;
 }
 
-void *malloc(size_t size)
+static meta_data_t malloc_core(size_t size)
 {
 	meta_data_t block;
 
-	if (size == 0)
-		return NULL;
-	size = ALIGN(size, sizeof(void *));
-	pthread_mutex_lock(&heap_mutex);
 	if (heap_head == NULL) {
 		block = push_break(size);
 		heap_head = block;
@@ -70,7 +66,7 @@ void *malloc(size_t size)
 		if (block == NULL) {
 			block = push_break(size);
 			if (block == NULL)
-				goto end;
+				return NULL;
 			heap_tail->next = block;
 			block->prev = heap_tail;
 			heap_tail = block;
@@ -78,7 +74,18 @@ void *malloc(size_t size)
 			split_block(block, size);
 		block->used = 1;
 	}
-end:
+	return block;
+}
+
+void *malloc(size_t size)
+{
+	meta_data_t block;
+
+	if (size == 0)
+		return NULL;
+	size = ALIGN(size, sizeof(void *));
+	pthread_mutex_lock(&heap_mutex);
+	block = malloc_core(size);
 	pthread_mutex_unlock(&heap_mutex);
 	return (block) ? block + 1 : NULL;
 }

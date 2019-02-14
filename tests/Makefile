@@ -13,7 +13,7 @@ CFLAGS		+=		-I ../include -I ./include
 
 CFLAGS		+=		$(DEBUG)
 
-LDFLAGS		=		-l criterion -coverage -l show
+LDFLAGS		=	
 
 NAME		=		unit-tests
 
@@ -25,7 +25,7 @@ OBJDIR		=		build
 
 OBJS		=		$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o,  $(SRCS))
 
-all:		libshow.so $(NAME)
+all:		$(NAME)
 		@echo "Done compiling $(NAME)"
 		@echo "Executing tests:"
 #		@make --no-print-directory run1
